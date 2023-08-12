@@ -1,129 +1,120 @@
-import { GithubUsers } from './GithubUsers.js';
+import { GithubUsers } from './GithubUsers.js'
 
 // parte que trbalhará com a estrutura e lógica dos dados
 
-export class Favorites{
+export class Favorites {
+	constructor(root) {
+		this.root = document.querySelector(root)
+		this.load()
+	}
+	load() {
+		this.entries = JSON.parse(localStorage.getItem('@Github-Favorites:')) || []
+	}
 
-  constructor (root){
-    this.root = document.querySelector(root)
-    this.load()
-  }
-  load(){
-    this.entries = JSON.parse(localStorage.getItem('@Github-Favorites:')) || []
-  }
-  
-  delete(user){
-    const filteredEntries = this.entries.filter((entry) => (user.login !== entry.login))
-    
-    this.entries = filteredEntries
-    this.save()
-    this.update()
-  }
+	delete(user) {
+		const filteredEntries = this.entries.filter(
+			(entry) => user.login !== entry.login
+		)
+
+		this.entries = filteredEntries
+		this.save()
+		this.update()
+	}
 }
 
 // classe que criará e manipulará os elementos visuais do html
 
-export class FavoritesView extends Favorites{ 
-  constructor (root){
-    super(root)
-    
-    this.update()
-    this.onAdd()
-  }
+export class FavoritesView extends Favorites {
+	constructor(root) {
+		super(root)
 
-  save(){
-    localStorage.setItem('@Github-Favorites:', JSON.stringify(this.entries))
-  }
-  
-  onAdd(){
-    const addButton = document.querySelector('.search button')
-    addButton.onclick = () => {
-      
-      const {value} = document.querySelector('.search input')
-      if (value !== ''){
-        this.addFav(value)
-      }
-    }
-    document.addEventListener('keypress', function(e){
-      const {value} = document.querySelector('.search input')
-      if(e.key === 'Enter'){
-        console.log('entrei na condição')
-        if(value !== ''){
-          console.log(value)
-          addButton.click()
-        }
-      }
-    })
-    
-  }
-  
-  async addFav(username){
-    const clearInput = document.querySelector('.search input')
-    try{
+		this.update()
+		this.onAdd()
+	}
 
-      const userExists = this.entries.find(entry => entry.login === username)
+	save() {
+		localStorage.setItem('@Github-Favorites:', JSON.stringify(this.entries))
+	}
 
-      if(userExists){
-        clearInput.value = ''
-        throw new Error('Usuário já cadastrado')
-      }
+	onAdd() {
+		const addButton = document.querySelector('.search button')
+		addButton.onclick = () => {
+			const { value } = document.querySelector('.search input')
+			if (value !== '') {
+				this.addFav(value)
+			}
+		}
+		document.addEventListener('keypress', function (e) {
+			const { value } = document.querySelector('.search input')
+			if (e.key === 'Enter') {
+				if (value !== '') {
+					addButton.click()
+				}
+			}
+		})
+	}
 
-      const user = await GithubUsers.search(username)
+	async addFav(username) {
+		const clearInput = document.querySelector('.search input')
+		try {
+			const userExists = this.entries.find((entry) => entry.login === username)
 
-      if(user.login === undefined){
-        throw new Error('O usuário não existe')
-      }
-      else{
-        clearInput.value = ''
-      }
+			if (userExists) {
+				clearInput.value = ''
+				throw new Error('Usuário já cadastrado')
+			}
 
-      this.entries = [user, ...this.entries]
+			const user = await GithubUsers.search(username)
 
-    }catch(error){
-      alert(error.message)
-    }
-    this.save()
-    this.update()
-   
-  }
-   update(){
+			if (user.login === undefined) {
+				throw new Error('O usuário não existe')
+			} else {
+				clearInput.value = ''
+			}
 
-    this.tbody = this.root.querySelector('table tbody')
+			this.entries = [user, ...this.entries]
+		} catch (error) {
+			alert(error.message)
+		}
+		this.save()
+		this.update()
+	}
+	update() {
+		this.tbody = this.root.querySelector('table tbody')
 
-    this.removeAllTr()
-    
-    console.log('cheguei')
-    this.noFavorites()
-    this.entries.forEach(user => {
-      const row = this.createRow()
+		this.removeAllTr()
 
-      row.querySelector('img').alt = `Imagem de ${user.name}`
-      row.querySelector('.user a').href = `https://github.com/${user.login}`
-      row.querySelector('.user img').src = `https://github.com/${user.login}.png`
-      row.querySelector('.user p').textContent = user.name
-      row.querySelector('.user span').textContent = `/${user.login}`
-      row.querySelector('.followers').textContent = user.followers
-      row.querySelector('.repos').textContent = user.public_repos
-     
-      row.querySelector('.remove').onclick = () => {
-        this.delete(user)
-      }
-      this.tbody.append(row)
-    })
-   }
+		this.noFavorites()
+		this.entries.forEach((user) => {
+			const row = this.createRow()
 
-   removeAllTr(){
+			row.querySelector('img').alt = `Imagem de ${user.name}`
+			row.querySelector('.user a').href = `https://github.com/${user.login}`
+			row.querySelector(
+				'.user img'
+			).src = `https://github.com/${user.login}.png`
+			row.querySelector('.user p').textContent = user.name
+			row.querySelector('.user span').textContent = `/${user.login}`
+			row.querySelector('.followers').textContent = user.followers
+			row.querySelector('.repos').textContent = user.public_repos
 
-    this.tbody.querySelectorAll('tr').forEach((tr)=>{
-      tr.remove()
-    })
-   }
+			row.querySelector('.remove').onclick = () => {
+				this.delete(user)
+			}
+			this.tbody.append(row)
+		})
+	}
 
-   createRow(){
+	removeAllTr() {
+		this.tbody.querySelectorAll('tr').forEach((tr) => {
+			tr.remove()
+		})
+	}
 
-    const tr = document.createElement('tr')
-    
-    tr.innerHTML = `
+	createRow() {
+		const tr = document.createElement('tr')
+
+		tr.innerHTML = `
       <tr>
         <td>
         <img src="https://github.com/maykbrito.png" href="" alt="foto de Mayk Brito">
@@ -140,21 +131,17 @@ export class FavoritesView extends Favorites{
         <td> <button class="remove">remover</button> </td>
       </tr>
     `
-    tr.className = 'user'
+		tr.className = 'user'
 
-    return tr
-   }
+		return tr
+	}
 
-   noFavorites(){
-    console.log('tome')
-    const noFavs = document.querySelector('.no-favorites')
-    if(this.entries.length <= 0){
-      noFavs.classList.remove('hide')
-      console.log(this.entries.length)
-    }
-    else{
-      noFavs.classList.add('hide')
-    }
-   }
-
- }
+	noFavorites() {
+		const noFavs = document.querySelector('.no-favorites')
+		if (this.entries.length <= 0) {
+			noFavs.classList.remove('hide')
+		} else {
+			noFavs.classList.add('hide')
+		}
+	}
+}
