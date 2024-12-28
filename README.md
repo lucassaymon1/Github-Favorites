@@ -8,7 +8,7 @@ This is an application where you can add GitHub user accounts to your personal l
 
 ## Features and Tools
 
-This web app consumes the github API to fetch for the user provided in the search bar, then gests it's data to display in a table of your favorite GitHub users!
+This web app consumes the github API to fetch for the user provided in the search bar, then gets it's data to display in a table of your favorite GitHub users!
 The aplication was built with `html`, `css`, `javascript` and uses concepts like `ES6 modules`, `API consumption`, `css variables`, `DOM manipulation`, `web storage` and `JS fetch` funcions to get the data. 
 
 ## Deploy
